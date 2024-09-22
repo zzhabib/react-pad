@@ -4,6 +4,7 @@ local React = require(script.Parent.React)
 local dummyButton: GuiButton = Instance.new("TextButton")
 
 function useButton()
+    local indexRef = React.useRef(-1)
     local buttonRef = React.useRef(dummyButton)
     local context = React.useContext(MenuContext)
 
@@ -16,8 +17,9 @@ function useButton()
         end
 
         context.setItems(function(items)
+            indexRef.current = #items
             local itemsClone = table.clone(items)
-            table.insert(itemsClone, buttonRef)
+            table.insert(itemsClone, buttonRef.current)
             return itemsClone
         end)
 
@@ -33,6 +35,12 @@ function useButton()
         }
 
         return function()
+            context.setItems(function(items)
+                local itemsClone = table.clone(items)
+                table.remove(itemsClone, indexRef.current)
+                return itemsClone
+            end)
+
             for _, connection in pairs(connections) do
                 connection:Disconnect()
             end
